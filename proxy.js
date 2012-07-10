@@ -6,22 +6,7 @@ var fs = require('fs');
 
 var port = 8000;
 
-var INJECT = "<span id='browser-proxy-hack'>&nbsp;</span>";
-INJECT += "<script>$(function () { $('#browser-proxy-hack').attr('data-loc', window.location.href).click(); });</script>";
-
-function filterData(rsp, data) {
-	var transform = (rsp.headers['content-type'] || "").match(/^text\/html/);
-	var data = data.toString();
-	
-	// data = data.replace('</body>', INJECT + '</body>');
-
-	if (transform) {
-		data = data.replace(/www.direct.gov.uk/g, "localhost:8000");
-	}
-	
-	return data;
-}
-
+var PROXY_ROOT = 'localhost:' + port
 
 function proxy(req, rsp, host) {
 	req.headers['host'] = host;
@@ -30,13 +15,28 @@ function proxy(req, rsp, host) {
 	var upstream_req = upstream.request(req.method, req.url, req.headers);
 
 	upstream_req.on('response', function(upstream_rsp) {
+		if (upstream_rsp.headers.location) {
+			upstream_rsp.headers.location = upstream_rsp.headers.location.replace(new RegExp(host, "g"), PROXY_ROOT);
+		}
 		rsp.writeHead(upstream_rsp.statusCode, upstream_rsp.headers);
 
+		var transform = (upstream_rsp.headers['content-type'] || "").match(/^text\/html/);
+		var dataArr = [];
+
 		upstream_rsp.on('data', function(data) {
-			rsp.write(new Buffer(filterData(upstream_rsp, data)), 'binary');
+			if (transform) {
+				dataArr.push(data.toString());
+			} else {
+				rsp.write(data, 'binary');
+			}
 		});
 
 		upstream_rsp.on('end', function() {
+			if (transform) {
+				var data = dataArr.join('');
+				data = data.replace(new RegExp(host, "g"), PROXY_ROOT);				
+				rsp.write(data);
+			}
 			rsp.end();
 		});
 	});

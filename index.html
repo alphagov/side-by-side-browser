@@ -10,16 +10,48 @@
 	<div id="status"></div>
 </div>
 <div class="body">
+  <iframe scrolling="yes" id="old" src="http://localhost:8000/" frameborder="0" allowtransparency="true" style="width:49%;height:100%"></iframe>
+  <iframe scrolling="yes" id="new" src="" frameborder="0" allowtransparency="true" style="width:49%;height:100%"></iframe>
+
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
   <script>
-  var onFrameLoad = function onFrameLoad() {
-	var url = this.contentWindow.location;
-	console.log(url);
-	$('#header').html('URL: <a href="'+ url + '">' + url + '</a>');
-  };
+  (function ($) {
+    var frame = $('#old')[0];
+    var offDomain = 'Browsing off-domain... no mappings will be shown.';
+    var offDomainWarning = "You've now navigated off the DirectGov domain. Clicking OK will reload this page, bringing you back to DirectGov home. Cancelling will allow you to continue, but be aware no updates will occur to the GOV.UK panel.";
+    var shownOffDomainWarning = false;
+
+    function updateHeader(content) {
+      $('#header').html(content);
+    }
+
+    function updateUrl() {
+      url = frame.contentWindow.location.href;
+      if (typeof url === 'undefined') {
+        if (shownOffDomainWarning) {
+          updateHeader(offDomain);
+          return;
+        }
+
+        if (confirm(offDomainWarning)) {
+          location.href = '/browser';
+        } else {
+          shownOffDomainWarning = true;
+          updateHeader(offDomain);
+        }
+        
+      } else {
+        updateHeader('URL: <a href="'+ url + '">' + url + '</a>');      
+      }
+    }
+
+    function init() {
+      updateTimer = setInterval(updateUrl, 1000);
+    }
+
+    $(init);
+  }(jQuery));
   </script>
-  <iframe scrolling="yes" id="old" onload="onFrameLoad.call(this)" src="http://localhost:8000" frameborder="0" allowtransparency="true" style="width:49%;height:100%"></iframe>
-  <iframe scrolling="yes" id="new" src="" frameborder="0" allowtransparency="true" style="width:49%;height:100%"></iframe>
 </div>
 </body>
 <html>
