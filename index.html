@@ -16,7 +16,13 @@
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
   <script>
   (function ($) {
-    var frame = $('#old')[0];
+    var PROXY_HOST = 'localhost:8000';
+    var MAPPED_HOST = 'www.direct.gov.uk';
+
+    var NULL_MAPPING_URL = 'http://placekitten.com/g/600/600';
+    var NO_MAPPINGS_URL = 'http://placekitten.com/g/600/600';
+
+    var curUrl;
     var offDomain = 'Browsing off-domain... no mappings will be shown.';
     var offDomainWarning = "You've now navigated off the DirectGov domain. Clicking OK will reload this page, bringing you back to DirectGov home. Cancelling will allow you to continue, but be aware no updates will occur to the GOV.UK panel.";
     var shownOffDomainWarning = false;
@@ -25,8 +31,26 @@
       $('#header').html(content);
     }
 
+    function updateFrame(url) {
+      url = url.replace(PROXY_HOST, MAPPED_HOST);
+
+      $.getJSON('/mapping/api/mappings.json', {old_url: url})
+        .then(function (data) {
+          var m;
+          if (typeof data.mappings !== 'undefined' && data.mappings.length > 0) {
+            m = data.mappings[0].mapping.new_url;
+          } else {
+            m = NO_MAPPINGS_URL;
+          }
+          if (m == null) {
+            m = NULL_MAPPING_URL;
+          }
+          $('#new').attr('src', m);
+        });
+    }
+
     function updateUrl() {
-      url = frame.contentWindow.location.href;
+      url = $('#old')[0].contentWindow.location.href;
       if (typeof url === 'undefined') {
         if (shownOffDomainWarning) {
           updateHeader(offDomain);
@@ -40,8 +64,10 @@
           updateHeader(offDomain);
         }
         
-      } else {
+      } else if (url != curUrl) {
         updateHeader('URL: <a href="'+ url + '">' + url + '</a>');      
+        updateFrame(url);      
+        curUrl = url;
       }
     }
 
