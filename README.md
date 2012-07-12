@@ -10,4 +10,6 @@ Simple node.js proxy to serve the review-o-matic and the site under review on th
     export UPSTREAM_HOST='reviewomatic.production.alphagov.co.uk'
     export UPSTREAM_AUTH='username:password'
 
+    export API_HOST='migratorator.production.alphagov.co.uk'
+
     node proxy.js
