@@ -5,35 +5,43 @@ var https = require('https');
 var util = require('util');
 var fs = require('fs');
 
-var PROXY_HOST = process.env.PROXY_HOST || 'www.direct.gov.uk';
-var PORT = process.env.PORT || 8000;
-var MIGRATORATOR_API = process.env.MIGRATORATOR_API || 'migratorator.production.alphagov.co.uk';
-var MIGRATORATOR_AUTH = process.env.MIGRATORATOR_AUTH;
+var PORT = process.env.PORT || 8096;
 
-if (!MIGRATORATOR_AUTH) {
-	throw "You must set the MIGRATORATOR_AUTH environment variable to auth credentials in the form 'username:password'!";
+var REWRITER_HOST = process.env.REWRITER_HOST || 'www.direct.gov.uk';
+
+var UPSTREAM_HOST = process.env.UPSTREAM_HOST || 'reviewomatic.production.alphagov.co.uk';
+var UPSTREAM_AUTH = process.env.UPSTREAM_AUTH;
+
+if (!UPSTREAM_AUTH) {
+	throw "You must set the UPSTREAM_AUTH environment variable to auth credentials in the form 'username:password'!";
 }
 
-var RewriterProxy = function RewriterProxy(host, ssl) {
-	var clientLib = ssl ? https : http;
+var Proxy = function (host, transform, ssl, auth) {
+	var client = ssl ? https : http;
 	var proto = ssl ? "https" : "http";
 
 	this.process = function process(req, res) {
 		req.headers.host = host;
 
-		var remoteReq = clientLib.request({
+		var options = {
 			host: host,
 			method: req.method,
 			headers: req.headers,
 			path: req.url
-		});
+		}
+
+		if (auth) {
+			options.auth = auth;
+		}
+
+		var remoteReq = client.request(options);
 
 		remoteReq.on('error', console.error);
 
 		remoteReq.on('response', function (remoteRes) {
 
 			var buffer = [];
-			var doTransform = (remoteRes.headers['content-type'] || "").match(/^text\/html/);
+			var doTransform = transform && ((remoteRes.headers['content-type'] || "").match(/^text\/html/));
 
 			if (doTransform) {
 				delete remoteRes.headers['content-length'];
@@ -75,48 +83,8 @@ var RewriterProxy = function RewriterProxy(host, ssl) {
 	return this;
 };
 
-var AuthenticatingProxy = function AuthenticatingProxy(host, auth, ssl) {
-	var clientLib = ssl ? https : http;
-
-	this.process = function pipe(req, rsp) {
-		var options = {
-			host: host,
-			auth: auth,
-			path: req.url
-		};
-
-		var remoteReq = clientLib.request(options, function (res) {
-			var data = [];
-			res.on('data', function (d) {
-				data.push(d.toString());
-			});
-			res.on('end', function () {
-				rsp.writeHead(200, {'content-type': 'application/json'});
-				rsp.end(data.join(''));
-			});
-		});
-
-		remoteReq.end();
-	};
-
-	return this;
-};
-
-var fail = function fail(req, res, msg) {
-	res.writeHead(400, {'content-type': 'application/json'});
-	res.end(JSON.stringify({status: 400, error: msg}));
-};
-
-var serveFile = function serveFile(fname, req, res) {
-	fs.readFile(fname, function (err, data) {
-		if (err) { throw err; }
-		res.writeHead(200, {'content-type': 'text/html'});
-		res.end(data);
-	});
-};
-
-var rewriterProxy = new RewriterProxy(PROXY_HOST);
-var migratoratorProxy = new AuthenticatingProxy(MIGRATORATOR_API, MIGRATORATOR_AUTH, true);
+var upstreamProxy = new Proxy(UPSTREAM_HOST, false, true, UPSTREAM_AUTH);
+var rewriterProxy = new Proxy(REWRITER_HOST, true);
 
 http.createServer(function (req, res) {
 	var m;
@@ -124,15 +92,12 @@ http.createServer(function (req, res) {
 
 	util.log(ip + ": " + req.method + " " + req.url);
 
-	if (req.url.match(/^\/__browser__(\/?.*)$/)) {
-		serveFile('index.html', req, res);
-	} else if ((m = req.url.match(/^\/__mapping__(\/?.*)$/))) {
-		req.url = m[1] || '/';
-		migratoratorProxy.process(req, res);
+	if ((m = req.url.match(/^\/__\/.*$/))) {
+		upstreamProxy.process(req, res);
 	} else {
 		rewriterProxy.process(req, res);
 	}
 
 }).listen(PORT);
 
-console.log('Server started: point your browser at http://localhost:' + PORT + '/__browser__');
+console.log('Proxy started: point your browser at http://localhost:' + PORT + '/__/');
