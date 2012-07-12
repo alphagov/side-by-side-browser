@@ -11,14 +11,14 @@ var REWRITER_HOST = process.env.REWRITER_HOST || 'www.direct.gov.uk';
 
 var UPSTREAM_HOST = process.env.UPSTREAM_HOST || 'reviewomatic.production.alphagov.co.uk';
 var UPSTREAM_AUTH = process.env.UPSTREAM_AUTH;
+var UPSTREAM_PROTOCOL = process.env.UPSTREAM_PROTOCOL || "https";
 
 if (!UPSTREAM_AUTH) {
 	throw "You must set the UPSTREAM_AUTH environment variable to auth credentials in the form 'username:password'!";
 }
 
-var Proxy = function (host, transform, ssl, auth) {
-	var client = ssl ? https : http;
-	var proto = ssl ? "https" : "http";
+var Proxy = function (host, transform, protocol, auth) {
+	var client = (protocol == "https") ? https : http;
 
 	this.process = function process(req, res) {
 		req.headers.host = host;
@@ -48,7 +48,7 @@ var Proxy = function (host, transform, ssl, auth) {
 			}
 
 			if (remoteRes.headers.location) {
-				remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + proto + "://" + host, "g"), '');
+				remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
 			}
 
 			res.writeHead(remoteRes.statusCode, remoteRes.headers);
@@ -64,7 +64,7 @@ var Proxy = function (host, transform, ssl, auth) {
 			remoteRes.on('end', function() {
 				if (doTransform) {
 					var data = buffer.join('').toString();
-					data = data.replace(new RegExp(proto + '://' + host, 'g'), '');
+					data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
 					res.write(data);
 				}
 				res.end();
@@ -83,7 +83,7 @@ var Proxy = function (host, transform, ssl, auth) {
 	return this;
 };
 
-var upstreamProxy = new Proxy(UPSTREAM_HOST, false, true, UPSTREAM_AUTH);
+var upstreamProxy = new Proxy(UPSTREAM_HOST, false, UPSTREAM_PROTOCOL, UPSTREAM_AUTH);
 var rewriterProxy = new Proxy(REWRITER_HOST, true);
 
 http.createServer(function (req, res) {
@@ -92,7 +92,7 @@ http.createServer(function (req, res) {
 
 	util.log(ip + ": " + req.method + " " + req.url);
 
-	if ((m = req.url.match(/^\/__\/.*$/))) {
+	if ((m = req.url.match(/^\/__.*$/))) {
 		upstreamProxy.process(req, res);
 	} else {
 		rewriterProxy.process(req, res);
@@ -100,4 +100,4 @@ http.createServer(function (req, res) {
 
 }).listen(PORT);
 
-console.log('Proxy started: point your browser at http://localhost:' + PORT + '/__/');
+console.log('Proxy started: point your browser at http://localhost:' + PORT + '/__');
