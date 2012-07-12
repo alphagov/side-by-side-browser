@@ -31,8 +31,13 @@ var RewriterProxy = function RewriterProxy(host, ssl) {
 		remoteReq.on('error', console.error);
 
 		remoteReq.on('response', function (remoteRes) {
+
 			var buffer = [];
 			var doTransform = (remoteRes.headers['content-type'] || "").match(/^text\/html/);
+
+			if (doTransform) {
+				delete remoteRes.headers['content-length'];
+			}
 
 			if (remoteRes.headers.location) {
 				remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + proto + "://" + host, "g"), '');
