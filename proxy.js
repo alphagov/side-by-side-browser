@@ -23,6 +23,7 @@ if (!UPSTREAM_AUTH) {
 
 var Proxy = function (host, transform, protocol, auth, namespace) {
 	var client = (protocol == "https") ? https : http;
+	protocol = protocol || "http";
 
 	this.process = function process(req, res) {
 		req.headers.host = host;
@@ -42,8 +43,6 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 			options.path = options.path.replace(namespace, "");
 		}
 
-		//console.log(options);
-
 		var remoteReq = client.request(options);
 
 		remoteReq.on('error', console.error);
@@ -51,14 +50,14 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 		remoteReq.on('response', function (remoteRes) {
 
 			var buffer = [];
-			var doTransform = transform && ((remoteRes.headers['content-type'] || "").match(/^text\/html/));
+			var doTransform = transform && (remoteRes.headers['content-type'] || "").match(/^text\/html/);
 
 			if (doTransform) {
 				delete remoteRes.headers['content-length'];
-			}
 
-			if (remoteRes.headers.location) {
-				remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
+				if (remoteRes.headers.location) {
+					remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
+				}
 			}
 
 			res.writeHead(remoteRes.statusCode, remoteRes.headers);
