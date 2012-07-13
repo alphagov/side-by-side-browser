@@ -1,0 +1,7 @@
+{
+  "name": "review-o-matic-explore",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node proxy.js"
+  }
+}
