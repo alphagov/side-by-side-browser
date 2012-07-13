@@ -74,6 +74,7 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 				if (doTransform) {
 					var data = buffer.join('').toString();
 					data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
+					data = data.replace(new RegExp('<a target="', 'g'), '<a _target="');
 					res.write(data);
 				}
 				res.end();
