@@ -6,6 +6,7 @@ var http = require('http');
 var https = require('https');
 var util = require('util');
 var fs = require('fs');
+var zlib = require('zlib');
 
 var PORT = process.env.PORT || 8096;
 
@@ -22,6 +23,31 @@ var API_PROTOCOL = process.env.API_PROTOCOL || "https";
 if (!UPSTREAM_AUTH) {
 	throw "You must set the UPSTREAM_AUTH environment variable to auth credentials in the form 'username:password'!";
 }
+var Transform = function (res, remoteRes, protocol, host) {
+
+	this.callback = function (error, data) {
+		if (error) {
+			console.log(error);
+			res.end();
+			return;
+		}
+
+		delete remoteRes.headers['content-length'];
+		delete remoteRes.headers['content-encoding'];
+		delete remoteRes.headers['transfer-encoding'];
+
+		data = data.toString();
+		data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
+		data = data.replace(new RegExp(' target="', 'g'), ' _target="');
+
+		remoteRes.headers['content-length'] = data.length;
+
+		res.writeHead(remoteRes.statusCode, remoteRes.headers);
+		res.end(data, 'utf8');
+	};
+
+	return this;
+};
 
 var Proxy = function (host, transform, protocol, auth, namespace) {
 	var client = (protocol === "https") ? https : http;
@@ -65,12 +91,19 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 
 				remoteRes.on('end', function () {
 					var data = Buffer.concat(buffer);
-					data = data.toString();
-					data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
-					data = data.replace(new RegExp('<a target="', 'g'), '<a _target="');
+					var transform = new Transform(res, remoteRes, protocol, host);
 
-					res.writeHead(remoteRes.statusCode, remoteRes.headers);
-					res.end(data);
+					switch (remoteRes.headers['content-encoding']) {
+					case 'gzip':
+						zlib.gunzip(data, transform.callback);
+						break;
+					case 'deflate':
+						zlib.deflate(data, transform.callback);
+						break;
+					default:
+						transform.callback(null, data);
+						break;
+					}
 				});
 			} else {
 				res.writeHead(remoteRes.statusCode, remoteRes.headers);
