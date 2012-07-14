@@ -64,7 +64,8 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 				});
 
 				remoteRes.on('end', function () {
-					var data = buffer.join('').toString();
+					var data = Buffer.concat(buffer);
+					data = data.toString();
 					data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
 					data = data.replace(new RegExp('<a target="', 'g'), '<a _target="');
 
