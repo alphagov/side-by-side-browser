@@ -25,7 +25,7 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 	var client = (protocol == "https") ? https : http;
 	protocol = protocol || "http";
 
-	this.process = function process(req, res) {
+	this.request = function (req, res) {
 		req.headers.host = host;
 
 		var options = {
@@ -104,11 +104,11 @@ http.createServer(function (req, res) {
 	util.log(ip + ": " + req.method + " " + req.url);
 
 	if ((m = req.url.match(/^\/__api.*$/))) {
-		apiProxy.process(req, res);
+		apiProxy.request(req, res);
 	} else if ((m = req.url.match(/^\/__.*$/))) {
-		upstreamProxy.process(req, res);
+		upstreamProxy.request(req, res);
 	} else {
-		rewriterProxy.process(req, res);
+		rewriterProxy.request(req, res);
 	}
 
 }).listen(PORT);
