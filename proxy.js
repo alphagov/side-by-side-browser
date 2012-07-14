@@ -51,36 +51,35 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 
 		remoteReq.on('response', function (remoteRes) {
 
-			var buffer = [];
-			var doTransform = transform && (remoteRes.headers['content-type'] || "").match(/^text\/html/);
-
-			if (doTransform) {
-				delete remoteRes.headers['content-length'];
-
-				if (remoteRes.headers.location) {
-					remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
-				}
+			if (remoteRes.headers.location) {
+				remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
 			}
 
-			res.writeHead(remoteRes.statusCode, remoteRes.headers);
+			if (transform && (remoteRes.headers['content-type'] || "").match(/^text\/html/)) {
+				var buffer = [];
+				delete remoteRes.headers['content-length'];
 
-			remoteRes.on('data', function (data) {
-				if (doTransform) {
+				remoteRes.on('data', function (data) {
 					buffer.push(data);
-				} else {
-					res.write(data);
-				}
-			});
+				});
 
-			remoteRes.on('end', function () {
-				if (doTransform) {
+				remoteRes.on('end', function () {
 					var data = buffer.join('').toString();
 					data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
 					data = data.replace(new RegExp('<a target="', 'g'), '<a _target="');
+
+					res.writeHead(remoteRes.statusCode, remoteRes.headers);
+					res.end(data);
+				});
+			} else {
+				res.writeHead(remoteRes.statusCode, remoteRes.headers);
+				remoteRes.on('data', function (data) {
 					res.write(data);
-				}
-				res.end();
-			});
+				});
+				remoteRes.on('end', function () {
+					res.end();
+				});
+			}
 		});
 
 		req.on('data', function (data) {
