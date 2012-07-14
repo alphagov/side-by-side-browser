@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+"use strict";
+
 var http = require('http');
 var https = require('https');
 var util = require('util');
@@ -22,7 +24,7 @@ if (!UPSTREAM_AUTH) {
 }
 
 var Proxy = function (host, transform, protocol, auth, namespace) {
-	var client = (protocol == "https") ? https : http;
+	var client = (protocol === "https") ? https : http;
 	protocol = protocol || "http";
 
 	this.request = function (req, res) {
@@ -33,7 +35,7 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 			method: req.method,
 			headers: req.headers,
 			path: req.url
-		}
+		};
 
 		if (auth) {
 			options.auth = auth;
@@ -62,7 +64,7 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 
 			res.writeHead(remoteRes.statusCode, remoteRes.headers);
 
-			remoteRes.on('data', function(data) {
+			remoteRes.on('data', function (data) {
 				if (doTransform) {
 					buffer.push(data);
 				} else {
@@ -70,7 +72,7 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
 				}
 			});
 
-			remoteRes.on('end', function() {
+			remoteRes.on('end', function () {
 				if (doTransform) {
 					var data = buffer.join('').toString();
 					data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
@@ -98,14 +100,13 @@ var upstreamProxy = new Proxy(UPSTREAM_HOST, false, UPSTREAM_PROTOCOL, UPSTREAM_
 var rewriterProxy = new Proxy(REWRITER_HOST, true);
 
 http.createServer(function (req, res) {
-	var m;
 	var ip = req.connection.remoteAddress;
 
 	util.log(ip + ": " + req.method + " " + req.url);
 
-	if ((m = req.url.match(/^\/__api.*$/))) {
+	if (req.url.match(/^\/__api/)) {
 		apiProxy.request(req, res);
-	} else if ((m = req.url.match(/^\/__.*$/))) {
+	} else if (req.url.match(/^\/__/)) {
 		upstreamProxy.request(req, res);
 	} else {
 		rewriterProxy.request(req, res);
