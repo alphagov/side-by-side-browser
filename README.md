@@ -7,6 +7,7 @@ Simple node.js proxy to serve the review-o-matic and the site under review on th
 
     export REWRITER_HOST='www.direct.gov.uk'
 
+    export UPSTREAM_PROTOCOL='https'
     export UPSTREAM_HOST='reviewomatic.production.alphagov.co.uk'
     export UPSTREAM_AUTH='username:password'
 
