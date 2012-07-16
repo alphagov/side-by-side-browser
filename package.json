@@ -1,7 +1,18 @@
 {
   "name": "review-o-matic-explore",
   "version": "0.0.1",
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*",
+    "sinon": "*",
+    "sinon-chai": "*"
+  },
+  "engines": {
+    "node": "~0.8.0",
+    "npm": "~1.1.0"
+  },
   "scripts": {
-    "start": "node proxy.js"
+    "start": "node server.js",
+    "test": "mocha"
   }
 }

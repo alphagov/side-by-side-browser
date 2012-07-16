@@ -1,150 +1,111 @@
-#!/usr/bin/env node
-
-"use strict";
-
 var http = require('http');
 var https = require('https');
-var util = require('util');
-var fs = require('fs');
-var zlib = require('zlib');
 
-var PORT = process.env.PORT || 8096;
-
-var REWRITER_HOST = process.env.REWRITER_HOST || 'www.direct.gov.uk';
-
-var UPSTREAM_HOST = process.env.UPSTREAM_HOST || 'reviewomatic.production.alphagov.co.uk';
-var UPSTREAM_AUTH = process.env.UPSTREAM_AUTH;
-var UPSTREAM_PROTOCOL = process.env.UPSTREAM_PROTOCOL || "https";
-
-var API_HOST = process.env.API_HOST || 'migratorator.production.alphagov.co.uk';
-var API_AUTH = process.env.API_AUTH || process.env.UPSTREAM_AUTH;
-var API_PROTOCOL = process.env.API_PROTOCOL || "https";
-
-if (!UPSTREAM_AUTH) {
-	throw "You must set the UPSTREAM_AUTH environment variable to auth credentials in the form 'username:password'!";
-}
 var Transform = function (res, remoteRes, protocol, host) {
 
-	this.callback = function (error, data) {
-		if (error) {
-			console.log(error);
-			res.end();
-			return;
-		}
+  this.callback = function (error, data) {
+    if (error) {
+      console.log(error);
+      res.end();
+      return;
+    }
 
-		delete remoteRes.headers['content-length'];
-		delete remoteRes.headers['content-encoding'];
-		delete remoteRes.headers['transfer-encoding'];
+    delete remoteRes.headers['content-length'];
+    delete remoteRes.headers['content-encoding'];
+    delete remoteRes.headers['transfer-encoding'];
 
-		data = data.toString();
-		data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
-		data = data.replace(new RegExp(' target="', 'g'), ' _target="');
+    data = data.toString();
+    data = data.replace(new RegExp(protocol + '://' + host, 'g'), '');
+    data = data.replace(new RegExp(' target="', 'g'), ' _target="');
 
-		remoteRes.headers['content-length'] = data.length;
+    remoteRes.headers['content-length'] = data.length;
 
-		res.writeHead(remoteRes.statusCode, remoteRes.headers);
-		res.end(data, 'utf8');
-	};
+    res.writeHead(remoteRes.statusCode, remoteRes.headers);
+    res.end(data, 'utf8');
+  };
 
-	return this;
+  return this;
 };
+
+exports.Transform = Transform;
 
 var Proxy = function (host, transform, protocol, auth, namespace) {
-	var client = (protocol === "https") ? https : http;
-	protocol = protocol || "http";
+  var client = (protocol === "https") ? https : http;
+  protocol = protocol || "http";
 
-	this.request = function (req, res) {
-		req.headers.host = host;
+  this.request = function (req, res) {
+    req.headers.host = host;
 
-		var options = {
-			host: host,
-			method: req.method,
-			headers: req.headers,
-			path: req.url
-		};
+    var options = {
+      host: host,
+      method: req.method,
+      headers: req.headers,
+      path: req.url
+    };
 
-		if (auth) {
-			options.auth = auth;
-		}
+    if (auth) {
+      options.auth = auth;
+    }
 
-		if (namespace) {
-			options.path = options.path.replace(namespace, "");
-		}
+    if (namespace) {
+      options.path = options.path.replace(namespace, "");
+    }
 
-		var remoteReq = client.request(options);
+    var remoteReq = client.request(options);
 
-		remoteReq.on('error', console.error);
+    remoteReq.on('error', console.error);
 
-		remoteReq.on('response', function (remoteRes) {
+    remoteReq.on('response', function (remoteRes) {
 
-			if (remoteRes.headers.location) {
-				remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
-			}
+      if (remoteRes.headers.location) {
+        remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
+      }
 
-			if (transform && (remoteRes.headers['content-type'] || "").match(/^text\/html/)) {
-				var buffer = [];
-				delete remoteRes.headers['content-length'];
+      if (transform && (remoteRes.headers['content-type'] || "").match(/^text\/html/)) {
+        var buffer = [];
+        delete remoteRes.headers['content-length'];
 
-				remoteRes.on('data', function (data) {
-					buffer.push(data);
-				});
+        remoteRes.on('data', function (data) {
+          buffer.push(data);
+        });
 
-				remoteRes.on('end', function () {
-					var data = Buffer.concat(buffer);
-					var transform = new Transform(res, remoteRes, protocol, host);
+        remoteRes.on('end', function () {
+          var data = Buffer.concat(buffer);
+          var transform = new Transform(res, remoteRes, protocol, host);
 
-					switch (remoteRes.headers['content-encoding']) {
-					case 'gzip':
-						zlib.gunzip(data, transform.callback);
-						break;
-					case 'deflate':
-						zlib.deflate(data, transform.callback);
-						break;
-					default:
-						transform.callback(null, data);
-						break;
-					}
-				});
-			} else {
-				res.writeHead(remoteRes.statusCode, remoteRes.headers);
-				remoteRes.on('data', function (data) {
-					res.write(data);
-				});
-				remoteRes.on('end', function () {
-					res.end();
-				});
-			}
-		});
+          switch (remoteRes.headers['content-encoding']) {
+          case 'gzip':
+            zlib.gunzip(data, transform.callback);
+            break;
+          case 'deflate':
+            zlib.deflate(data, transform.callback);
+            break;
+          default:
+            transform.callback(null, data);
+            break;
+          }
+        });
+      } else {
+        res.writeHead(remoteRes.statusCode, remoteRes.headers);
+        remoteRes.on('data', function (data) {
+          res.write(data);
+        });
+        remoteRes.on('end', function () {
+          res.end();
+        });
+      }
+    });
 
-		req.on('data', function (data) {
-			remoteReq.write(data);
-		});
+    req.on('data', function (data) {
+      remoteReq.write(data);
+    });
 
-		req.on('end', function () {
-			remoteReq.end();
-		});
-	};
+    req.on('end', function () {
+      remoteReq.end();
+    });
+  };
 
-	return this;
+  return this;
 };
 
-var apiProxy = new Proxy(API_HOST, false, API_PROTOCOL, API_AUTH, "/__api");
-var upstreamProxy = new Proxy(UPSTREAM_HOST, false, UPSTREAM_PROTOCOL, UPSTREAM_AUTH);
-var rewriterProxy = new Proxy(REWRITER_HOST, true);
-
-http.createServer(function (req, res) {
-	var ip = req.connection.remoteAddress;
-
-	util.log(ip + ": " + req.method + " " + req.url);
-
-	if (req.url.match(/^\/__api/)) {
-		apiProxy.request(req, res);
-	} else if (req.url.match(/^\/__/)) {
-		upstreamProxy.request(req, res);
-	} else {
-		rewriterProxy.request(req, res);
-	}
-
-}).listen(PORT);
-
-console.log('Proxy started: point your browser at http://localhost:' + PORT + '/__');
+exports.Proxy = Proxy;

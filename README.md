@@ -14,3 +14,9 @@ Simple node.js proxy to serve the review-o-matic and the site under review on th
     export API_HOST='migratorator.production.alphagov.co.uk'
 
     node proxy.js
+
+Run the tests
+-------------
+
+    npm install
+    npm test
