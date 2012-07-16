@@ -6,7 +6,6 @@ var http = require('http');
 var https = require('https');
 var util = require('util');
 var fs = require('fs');
-var zlib = require('zlib');
 
 var PORT = process.env.PORT || 8096;
 

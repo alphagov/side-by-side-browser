@@ -1,5 +1,6 @@
 var http = require('http');
 var https = require('https');
+var zlib = require('zlib');
 
 var Transform = function (res, remoteRes, protocol, host) {
 
