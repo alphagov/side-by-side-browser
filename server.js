@@ -7,7 +7,7 @@ var https = require('https');
 var util = require('util');
 var fs = require('fs');
 
-var PORT = process.env.PORT || 8096;
+var PORT = process.env.REVIEWOMATIC_EXPLORE_PORT || process.env.PORT || 8096;
 
 var REWRITER_HOST = process.env.REWRITER_HOST || 'www.direct.gov.uk';
 

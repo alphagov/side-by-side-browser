@@ -25,6 +25,7 @@ Simple node.js proxy to serve the review-o-matic and the site under review on th
 To run with `bowl` command create an `.env` in the `/development` directory with the following criteria:
 
 ```sh
+REVIEWOMATIC_EXPLORE_PORT=3023
 REWRITER_HOST=www.direct.gov.uk
 UPSTREAM_PROTOCOL=http
 UPSTREAM_HOST=reviewomatic.dev.gov.uk
@@ -39,3 +40,5 @@ bowl reviewomatic
 ```
 
 This should start reviewomatic, reviewomatic-explore and migratorator - everything you need to run and view reviewomatic-explore in dev
+
+NB: The enviroment variable `REVIEWOMATIC_EXPLORE_PORT` allows bowl/foreman to get the port from the `.env` file. 
