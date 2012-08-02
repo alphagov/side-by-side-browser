@@ -38,4 +38,4 @@ The updated Pinfile and Procfile should now contain the correct configuration to
 bowl reviewomatic
 ```
 
-This should start reviewomatic, reviewomatic-explore and migratorator - everything you need to run and view reviewomatic-explore in dev.
+This should start reviewomatic, reviewomatic-explore and migratorator - everything you need to run and view reviewomatic-explore in dev
