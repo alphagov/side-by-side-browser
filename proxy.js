@@ -30,13 +30,13 @@ var Transform = function (res, remoteRes, protocol, host) {
 
 exports.Transform = Transform;
 
-var Proxy = function (host, transform, protocol, auth, namespace) {
+var Proxy = function (host, transform, protocol, auth, rewriteHost) {
   var client = (protocol === "https") ? https : http;
   protocol = protocol || "http";
 
   this.request = function (req, res) {
 
-    if (req.headers.rewriteHost) {
+    if (rewriteHost) {
         req.headers.host = req.headers.proxy;
     } else {
         req.headers.host = host;
@@ -54,17 +54,13 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
       options.auth = auth;
     }
 
-    if (namespace) {
-      options.path = options.path.replace(namespace, "");
-    }
-
     var remoteReq = client.request(options);
 
     remoteReq.on('error', console.error);
 
     remoteReq.on('response', function (remoteRes) {
 
-      if (remoteRes.headers.location && req.headers.rewriteHost) {
+      if (rewriteHost && remoteRes.headers.location) {
         remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^w*:w*"), '');
       } else if (remoteRes.headers.location) {
         remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');

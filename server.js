@@ -25,7 +25,7 @@ if (!UPSTREAM_AUTH) {
 	throw "You must set the UPSTREAM_AUTH environment variable to auth credentials in the form 'username:password'!";
 }
 
-var apiProxy = new Proxy(API_HOST, false, API_PROTOCOL, API_AUTH);
+var apiProxy = new Proxy(API_HOST, false, API_PROTOCOL, API_AUTH, true);
 var upstreamProxy = new Proxy(UPSTREAM_HOST, false, UPSTREAM_PROTOCOL, UPSTREAM_AUTH);
 
 function rewriterProxy (req, res) {
@@ -40,7 +40,6 @@ http.createServer(function (req, res) {
 
 	if (req.url.match(/^\/__api/)) {
         req.url = req.url.replace('/__api', '');
-        req.headers.rewriteHost = 'true';
 		apiProxy.request(req, res);
 	} else if (req.url.match(/^\/__/)) {
 		upstreamProxy.request(req, res);
