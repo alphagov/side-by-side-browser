@@ -58,28 +58,15 @@ var Proxy = function (host, transform, protocol, auth, namespace) {
       options.path = options.path.replace(namespace, "");
     }
 
-    //console.log(options);
-    //console.log("OPTIONS");
-    console.log("OPTIONS HOST -->> ", options.headers.host);
-
     var remoteReq = client.request(options);
 
     remoteReq.on('error', console.error);
 
     remoteReq.on('response', function (remoteRes) {
 
-      //remoteRes.headers.host = 'www.direct.gov.uk';
-      //console.log("HEADERS", remoteRes.headers);
-      console.log("STATUS", remoteRes.statusCode);
-
       if (remoteRes.headers.location && req.headers.rewriteHost) {
-        console.log("rewriteHost is TRUE");
-        console.log(req.headers.rewriteHost);
-        //remoteRes.headers.location = req.headers.proxy;
-        //remoteRes.headers.location = 'http://www.gov.uk';
-        console.log("Changed Headers -->> ", remoteRes.headers);
+        remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^w*:w*"), '');
       } else if (remoteRes.headers.location) {
-        console.log("HEADERS -->> ", remoteRes.headers);
         remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
       }
 

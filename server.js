@@ -40,9 +40,6 @@ http.createServer(function (req, res) {
 
 	if (req.url.match(/^\/__api/)) {
         req.url = req.url.replace('/__api', '');
-        console.log(req.url);
-        //console.log(req.headers);
-        //req.headers.host = req.headers.proxy;
         req.headers.rewriteHost = 'true';
 		apiProxy.request(req, res);
 	} else if (req.url.match(/^\/__/)) {
