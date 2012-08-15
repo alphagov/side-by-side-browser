@@ -37,7 +37,7 @@ var Proxy = function (host, transform, protocol, auth, rewriteHost) {
   this.request = function (req, res) {
 
     if (rewriteHost) {
-        req.headers.host = req.headers.proxy;
+        req.headers.host = req.headers.proxy; //X-Explore-Upstream
     } else {
         req.headers.host = host;
     }
