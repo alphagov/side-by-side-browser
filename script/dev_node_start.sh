@@ -1,5 +1,5 @@
 #!/bin/sh
-export PORT=3023
+export PORT=8096
 export REWRITER_HOST='www.direct.gov.uk'
 export UPSTREAM_PROTOCOL='http'
 export UPSTREAM_HOST='reviewomatic.dev.gov.uk'
