@@ -29,7 +29,7 @@ var apiProxy = new Proxy(API_HOST, false, API_PROTOCOL, API_AUTH, true);
 var upstreamProxy = new Proxy(UPSTREAM_HOST, false, UPSTREAM_PROTOCOL, UPSTREAM_AUTH);
 
 function rewriterProxy (req, res) {
-    var rewriterProxyInstance = new Proxy(req.headers.proxy, true); //should be X-Explore-Upstream
+    var rewriterProxyInstance = new Proxy(req.headers['X-Explore-Upstream'], true); 
     return rewriterProxyInstance.request(req, res);
 }
 
