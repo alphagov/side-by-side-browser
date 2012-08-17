@@ -13,7 +13,7 @@ var UPSTREAM_HOST = process.env.UPSTREAM_HOST || 'reviewomatic.production.alphag
 var UPSTREAM_AUTH = process.env.UPSTREAM_AUTH;
 var UPSTREAM_PROTOCOL = process.env.UPSTREAM_PROTOCOL || "https";
 
-var API_HOST = process.env.API_HOST || 'dummy.preview.alphagov.co.uk';
+var API_HOST = process.env.API_HOST || 'redirector.preview.alphagov.co.uk';
 var API_AUTH = process.env.API_AUTH || process.env.UPSTREAM_AUTH;
 var API_PROTOCOL = process.env.API_PROTOCOL || "https";
 
