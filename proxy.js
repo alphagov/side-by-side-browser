@@ -30,16 +30,12 @@ var Transform = function (res, remoteRes, protocol, host) {
 
 exports.Transform = Transform;
 
-var Proxy = function (host, transform, protocol, auth, rewriteHost) {
+var Proxy = function (host, transform, protocol, auth) {
   var client = (protocol === "https") ? https : http;
   protocol = protocol || "http";
 
   this.request = function (req, res) {
-     if (rewriteHost) {
-        req.headers.host = req.headers['X-Explore-Upstream']; 
-     } else {
-        req.headers.host = host;
-     }
+    req.headers.host = host;
 
     var options = {
       host: host,
@@ -58,9 +54,7 @@ var Proxy = function (host, transform, protocol, auth, rewriteHost) {
 
     remoteReq.on('response', function (remoteRes) {
 
-      if (rewriteHost && remoteRes.headers.location) {
-        remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^w*:w*"), '');
-      } else if (remoteRes.headers.location) {
+      if (remoteRes.headers.location) {
         remoteRes.headers.location = remoteRes.headers.location.replace(new RegExp("^" + protocol + "://" + host, "g"), '');
       }
 
