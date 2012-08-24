@@ -4,13 +4,9 @@ Simple node.js proxy to serve the review-o-matic and the site under review on th
 
     export PORT=8096
 
-    export REWRITER_HOST='www.direct.gov.uk'
-
-    export UPSTREAM_PROTOCOL='https'
-    export UPSTREAM_HOST='reviewomatic.production.alphagov.co.uk'
-    export UPSTREAM_AUTH='username:password'
-
-    export API_HOST='migratorator.production.alphagov.co.uk'
+    export REVIEWOMATIC_PROTOCOL='https'
+    export REVIEWOMATIC_HOST='reviewomatic.production.alphagov.co.uk'
+    export REVIEWOMATIC_AUTH='username:password'
 
     node server.js
 
@@ -26,11 +22,8 @@ To run with `bowl` command create an `.env` in the `/development` directory with
 
 ```sh
 REVIEWOMATIC_EXPLORE_PORT=3023
-REWRITER_HOST=www.direct.gov.uk
-UPSTREAM_PROTOCOL=http
-UPSTREAM_HOST=reviewomatic.dev.gov.uk
-UPSTREAM_AUTH=username:password
-API_HOST=migratorator.dev.gov.uk
+REVIEWOMATIC_HOST=reviewomatic.dev.gov.uk
+REVIEWOMATIC_AUTH=username:password
 ```
 
 The updated Pinfile and Procfile should now contain the correct configuration to allow you to run the following command from `/development`:
