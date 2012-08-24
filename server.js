@@ -10,6 +10,7 @@ var Proxy = proxy.Proxy;
 var Transform = proxy.Transform;
 
 var PORT = process.env.REVIEWOMATIC_EXPLORE_PORT || process.env.PORT || 8096;
+var REVIEWOMATIC_PROTOCOL = process.env.REVIEWOMATIC_PROTOCOL || 'http';
 var REVIEWOMATIC_AUTH = process.env.REVIEWOMATIC_AUTH;
 var REVIEWOMATIC_HOST = process.env.REVIEWOMATIC_HOST || 'reviewomatic.production.alphagov.co.uk';
 
@@ -17,7 +18,7 @@ if (!REVIEWOMATIC_AUTH) {
 	throw "You must set the REVIEWOMATIC_AUTH environment variable to auth credentials in the form 'username:password'!";
 }
 
-var reviewomaticProxy = new Proxy(REVIEWOMATIC_HOST, false, 'http', REVIEWOMATIC_AUTH);
+var reviewomaticProxy = new Proxy(REVIEWOMATIC_HOST, false, REVIEWOMATIC_PROTOCOL, REVIEWOMATIC_AUTH);
 
 http.createServer(function (req, res) {
 	var upstreamHost;
