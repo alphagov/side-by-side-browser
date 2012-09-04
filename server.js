@@ -9,7 +9,7 @@ var proxy = require('./proxy');
 var Proxy = proxy.Proxy;
 var Transform = proxy.Transform;
 
-var PORT = process.env.REVIEWOMATIC_EXPLORE_PORT || process.env.PORT || 8096;
+var PORT = process.env.REVIEWOMATIC_EXPLORE_PORT || process.env.PORT || 3023;
 var REVIEWOMATIC_PROTOCOL = process.env.REVIEWOMATIC_PROTOCOL || 'http';
 var REVIEWOMATIC_AUTH = process.env.REVIEWOMATIC_AUTH;
 var REVIEWOMATIC_HOST = process.env.REVIEWOMATIC_HOST || 'reviewomatic.production.alphagov.co.uk';
