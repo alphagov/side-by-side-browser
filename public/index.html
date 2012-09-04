@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Explore the GOV.UK Mappings</title>
+  <!--[if lt IE 9]>
+  <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+<style>
+* {
+        margin: 0;
+        padding: 0;
+}
+
+body {
+        font-family: sans-serif;
+        color: #333;
+        background-color: #f2f2f2;
+}
+
+.header {
+        background-color: #303030;
+        color: white;
+        width: 100%;
+        min-width: 40em;
+        line-height: 1.9em;
+        padding: 0.5em 0;
+}
+
+.header h1 {
+        display: inline;
+        font-size: 1em;
+        font-weight: normal;
+        margin-left: 1em;
+}
+
+.header .question {
+        display: inline;
+        float: right;
+        margin-right: 1em;
+        text-align: right;
+        min-width: 10em;
+}
+
+.header a.question {
+        color: #888;
+}
+
+.header a {
+        color: white;
+        text-decoration: none;
+        font-weight: normal;
+}
+
+.header a:hover {
+        color: white;
+        text-decoration: underline;
+}
+
+.welcome {
+        width: 48em;
+        margin: 2em auto;
+        border: 1px solid black;
+        background-color: white;
+        padding: 1em;
+}
+
+.welcome p {
+        margin-top: 1em;
+}
+
+.welcome li {
+        margin: 1em 2em;
+}
+
+
+.comment {
+        display: none;
+        border-top: 1px solid #dfdfdf;
+        margin: 1em 2em 1em 4em;
+}
+
+.comment textarea {
+        width: 100%;
+        margin: 2em 0;
+        height: 5em;
+}
+
+.comment .radio {
+        margin: 1em 0;
+}
+
+.comment button {
+        padding: 0.5em 2em;
+}
+
+.panes {
+        width: 100%;
+        background-color: #000;
+}
+
+.pane {
+        width: 49.8%;
+        float: left;
+        border-top: 1px solid black;
+        overflow: hidden;
+}
+
+.pane .bar {
+        position: relative;
+}
+
+.pane .bar button {
+        position: absolute;
+        right: 0;
+        top: 0.2em;
+        background-color: #303030;
+        color: white;
+        border: 0;
+        padding: 0.25em;
+}
+
+.pane .bar input {
+        width: 100%;
+        background-color: #f2f2f2;
+        border: 0;
+        padding: 0.5em 1em;
+}
+
+.pane .bar input:focus {
+        background-color: white;
+        border: 0;
+        outline: none;
+}
+
+a.continue {
+  text-decoration: none;
+  background: #6759ec;
+  color: white;
+  padding: 5px 10px;
+}
+
+#result {
+  background: yellow;
+  padding: 5px 10px;
+}
+
+iframe {
+        border: 0;
+        width: 100%;
+        height: 100%;
+        border-top: 1px solid black;
+}
+</style>
+</head>
+<body class="explorer">
+  <div class='header'>
+        <h1>
+                <a href="/__">Explore</a> <a href="https://www.gov.uk">GOV.UK</a> mappings
+                <!-- for <a class="home" href="http://www.direct.gov.uk">Directgov</a> -->
+        </h1>
+  </div>
+  <div class="panes">
+	<div id="old" class="pane">
+		<div class="bar">
+			<button>&rarr;</button>
+			<input id="old_url" type="text" readonly="readonly"></input>
+		</div>
+		<iframe src=""></iframe>
+	</div>
+	<div id="new" class="pane">
+		<div class="bar">
+			<button>&rarr;</button>
+			<input id="new_url" type="text" readonly="readonly"></input>
+		</div>
+		<iframe src=""></iframe>
+	</div>
+</div>
+</body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+  <script>
+(function ($) {
+
+  var poll_interval = 1000;
+  var poll_timer;
+  var warned = false;
+  var last_url = '';
+
+
+  $(document).ready(function() {
+    if ($('#old').length) {
+      set_iframe_heights();
+      $(window).resize(set_iframe_heights);
+    
+      /*
+       *  poll for both iframe URLs to change
+       */
+      poll_timer = setInterval(check_old_url, poll_interval);
+
+      /*
+       *  load inital page
+       */
+      load_old_url(get_browser_location() || '/');
+
+      $('a.home').click( function (ev) {
+        load_old_url('/');
+        ev.preventDefault();
+        ev.stopPropagation();
+        return false;
+      });
+
+      /*
+       *  open URL in input bar (in a new window for now)
+       */
+      $('.bar button').click (function () {
+        var url = $(this).next('input').val()
+        if (url.substr(0, 4) != "http") {
+          url = ROOT + url;
+        }
+        window.open(url, '_top_');
+        return false;
+      });
+    }
+  });
+
+  /*
+   *  load new_url in RHS for given old_url
+   */
+  function load_new_url(old_url) {
+     console.log("load new for ", old_url);
+    $.getJSON('/__/redirect/" + old_url, function (mapping) {
+      $('#new iframe').attr('src', new_url);
+    });
+  }
+
+  /*
+   *  load old_url in LHS, triggers loading new_url
+   */
+  function load_old_url(url) {
+    $('#old_url').val(url);
+    $('#old iframe').attr('src', url);
+    set_browser_location(url);
+    load_new_url(url);
+    last_url = url;
+  }
+
+  /*
+   *  check old url for change
+   */
+  function check_old_url() {
+    var url;
+    try {
+      url = $('#old iframe')[0].contentWindow.location.pathname;
+    } catch (e) {
+      url = undefined;
+    }
+    var current_url = $('#old_url').val();
+
+    if (typeof url === 'undefined') {
+      var confirm_text = "You have navigated away from the main site, so the right hand side cannot be updated.";
+
+      if (!warned) {
+        if (confirm(confirm_text)) {
+          $('#old_url').val('');
+          $('#new_url').val('');
+          $('#new iframe').attr('src', '');
+          set_browser_location('');
+          warned = true;
+        }
+        else {
+          load_old_url(last_url);
+        }
+      }
+      return;
+    }
+
+    if (url === current_url) {
+      return;
+    }
+
+    warned = false;
+
+    load_old_url(url);
+  }
+
+  /*
+   *  update browser location
+   *  .. pushState would be preferable, but many of our users have ie6 ..
+   */
+  function get_browser_location() {
+    var hash = window.location.hash;
+    if (hash && hash.substr(0, 1) === '#') {
+      hash = hash.substr(1);
+    }
+    return hash;
+  }
+
+  function set_browser_location(old_url) {
+    window.location.hash = old_url;
+  }
+
+  function set_iframe_heights() {
+    var old_iframe_offset = $('#old iframe').offset();
+    var window_height     = $(window).height();
+
+    $('#old iframe, #new iframe').css(
+      'min-height',
+      window_height - old_iframe_offset['top']
+    );
+  }
+
+}(jQuery));
+</script>
+</html>
