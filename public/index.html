@@ -184,13 +184,13 @@ iframe {
   var poll_timer;
   var warned = false;
   var last_url = '';
-
+  var ROOT = '';        // TBD: set value by proxy
 
   $(document).ready(function() {
     if ($('#old').length) {
       set_iframe_heights();
       $(window).resize(set_iframe_heights);
-    
+
       /*
        *  poll for both iframe URLs to change
        */
@@ -223,23 +223,38 @@ iframe {
   });
 
   /*
-   *  load new_url in RHS for given old_url
+   *  load new_url in RHS
    */
-  function load_new_url(old_url) {
-     console.log("load new for ", old_url);
-    $.getJSON('/__/redirect/" + old_url, function (mapping) {
-      $('#new iframe').attr('src', new_url);
+  function load_new_url(statusCode, new_url) {
+    if (!new_url) {
+        new_url = "/__/" + statusCode;
+    }
+
+    $('#new_url').val(new_url);
+    $('#new iframe').attr('src', new_url);
+  }
+
+  /*
+   *  map the old_url into the new url and load in RHS
+   *  .. uses the proxy to send a HEAD request to redirector to find new URL
+   */
+  function map_old_url(old_url) {
+    $.getJSON('/__/head/' + old_url, function (head) {
+        if (head) {
+            load_new_url(head.statusCode, head.location);
+        }
     });
   }
 
   /*
-   *  load old_url in LHS, triggers loading new_url
+   *  load old_url in LHS
+   *  .. triggers loading new_url
    */
   function load_old_url(url) {
     $('#old_url').val(url);
     $('#old iframe').attr('src', url);
     set_browser_location(url);
-    load_new_url(url);
+    map_old_url(url);
     last_url = url;
   }
 
@@ -248,14 +263,20 @@ iframe {
    */
   function check_old_url() {
     var url;
+    var location;
+    var current_url = $('#old_url').val();
+
     try {
-      url = $('#old iframe')[0].contentWindow.location.pathname;
+      location = $('#old iframe')[0].contentWindow.location;
+      url = location.pathname;
+      if (url && location.search) {
+        url = url + location.search;
+      }
     } catch (e) {
       url = undefined;
     }
-    var current_url = $('#old_url').val();
 
-    if (typeof url === 'undefined') {
+    if (!url) {
       var confirm_text = "You have navigated away from the main site, so the right hand side cannot be updated.";
 
       if (!warned) {
@@ -273,12 +294,11 @@ iframe {
       return;
     }
 
-    if (url === current_url) {
+    if (url === current_url || url === 'blank') {
       return;
     }
 
     warned = false;
-
     load_old_url(url);
   }
 

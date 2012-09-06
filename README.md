@@ -1,37 +1,42 @@
 ## review-o-matic-explore
 
-Simple node.js proxy to serve the review-o-matic and the site under review on the same domain, so the side-by-side browser is 'live' and not blocked by Same-Origin-Policy.
+Simple node.js proxy to serve a side-by-side browser and a site being reviewed under on the same domain, so the side-by-side browser is 'live' and not blocked by Same-Origin-Policy.
 
-    export PORT=8096
-
-    export REVIEWOMATIC_PROTOCOL='https'
-    export REVIEWOMATIC_HOST='reviewomatic.production.alphagov.co.uk'
-    export REVIEWOMATIC_AUTH='username:password'
-
-    node server.js
+    $ node server.js
 
 #### Run the tests
 
-    npm install
-    npm test
+    $ npm install
+    $ npm test
 
+#### Setup Nginx to supply headers
 
-### Running with Bowl
+The proxy can be used to serve, subject to headers, For example to proxy www.direct.gov.uk on explore-dg.dev.gov.uk:
 
-To run with `bowl` command create an `.env` in the `/development` directory with the following criteria:
+    upstream explore-dg.dev.gov.uk-proxy {
+        server localhost:3023;
+    }
 
-```sh
-REVIEWOMATIC_EXPLORE_PORT=3023
-REVIEWOMATIC_HOST=reviewomatic.dev.gov.uk
-REVIEWOMATIC_AUTH=username:password
-```
+    server {
+      server_name explore-dg.dev.co.uk ;
 
-The updated Pinfile and Procfile should now contain the correct configuration to allow you to run the following command from `/development`:
+      listen 80;
 
-```sh
-bowl reviewomatic
-```
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-Server $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_redirect off;
 
-This should start reviewomatic, reviewomatic-explore and migratorator - everything you need to run and view reviewomatic-explore in dev
+      access_log /var/log/nginx/explore-dg.dev.co.uk-access.log timed_combined;
+      error_log /var/log/nginx/explore-dg.dev.co.uk-error.log;
 
-NB: The enviroment variable `REVIEWOMATIC_EXPLORE_PORT` allows bowl/foreman to get the port from the `.env` file. 
+      location / {
+        proxy_pass http://explore-dg.dev.co.uk-proxy;
+      }
+
+      # headers to proxy DirectGov
+      proxy_set_header X-Explore-Upstream www.direct.gov.uk;
+      proxy_set_header X-Explore-Redirector redirector.dev.gov.uk;
+      proxy_set_header X-Explore-Name DirectGov;
+    }
