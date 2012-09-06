@@ -37,6 +37,9 @@ var Proxy = function (host, transform, protocol, auth) {
   this.request = function (req, res) {
     req.headers.host = host;
 
+    // scrub proxy basic auth headers from upstream
+    delete req.headers.authorization;
+
     var options = {
       host: host,
       method: req.method,
