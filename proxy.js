@@ -51,6 +51,8 @@ var Proxy = function (host, transform, protocol, auth) {
       options.auth = auth;
     }
 
+console.log("request:", options);
+
     var remoteReq = client.request(options);
 
     remoteReq.on('error', console.error);
@@ -63,6 +65,7 @@ var Proxy = function (host, transform, protocol, auth) {
 
       if (transform && (remoteRes.headers['content-type'] || "").match(/^text\/html/)) {
         var buffer = [];
+console.log("remoteRes.headers:", remoteRes.headers);
         delete remoteRes.headers['content-length'];
 
         remoteRes.on('data', function (data) {

@@ -155,8 +155,7 @@ iframe {
 <body class="explorer">
   <div class='header'>
         <h1>
-                <a href="/__/">Explore</a> <a href="https://www.gov.uk">GOV.UK</a> mappings
-                <!-- for <a class="home" href="http://www.direct.gov.uk">Directgov</a> -->
+                <a href="/__/">Explore</a> the <span id="origin"></span> <a href="https://www.gov.uk">GOV.UK</a> mappings
         </h1>
   </div>
   <div class="panes">
@@ -184,7 +183,7 @@ iframe {
   var poll_timer;
   var warned = false;
   var last_url = '';
-  var ROOT = '';        // TBD: set value by proxy
+  var proxy_info = {};
 
   $(document).ready(function() {
     if ($('#old').length) {
@@ -195,6 +194,14 @@ iframe {
        *  poll for both iframe URLs to change
        */
       poll_timer = setInterval(check_old_url, poll_interval);
+
+      /*
+       *  progressively enhance page with proxy info
+       */
+      $.getJSON('/__/info.json', function (info) {
+        var url = (info.upstream_protocol || "") + "://" + (info.upstream || "");
+        $('#origin').append('<a id="upstream_home" class="home" href="' + url + '">' + info.title + '</a> to');
+      });
 
       /*
        *  load inital page
@@ -214,13 +221,20 @@ iframe {
       $('.bar button').click (function () {
         var url = $(this).next('input').val()
         if (url.substr(0, 4) != "http") {
-          url = ROOT + url;
+          url = upstream_url(url);
         }
         window.open(url, '_top_');
         return false;
       });
     }
   });
+
+  /*
+   *  upstream url for a path
+   */
+  function upstream_url(path) {
+     return $('#upstream_home').attr('href') + path;
+  }
 
   /*
    *  load new_url in RHS

@@ -4,7 +4,7 @@ var fs = require('fs');
 var explorer = {};
 
 /*
- *  single page app
+ *  serve html file
  */
 explorer.html = function (req, rsp, name, statusCode) {
 	var content = fs.readFileSync("public/" + name + ".html");
@@ -12,18 +12,25 @@ explorer.html = function (req, rsp, name, statusCode) {
 	rsp.end(content);
 };
 
+/*
+ *  serve JSON content
+ */
+explorer.json = function (req, rsp, content) {
+	rsp.writeHead(200, {'Content-Type': 'application/json'});
+	rsp.end(JSON.stringify(content));
+}
 
 /*
  *  use redirector to present mapping information as json
  */
-explorer.head = function (req, rsp, path, redirector, upstream) {
+explorer.head = function (req, rsp, path, info) {
 
 	var options = {
 		'method': 'HEAD',
-		'host': redirector,
+		'host': info.redirector,
 		'path': path,
 		'headers': {
-			'host': upstream
+			'host': info.upstream
 		}
 	};
 
@@ -34,8 +41,7 @@ explorer.head = function (req, rsp, path, redirector, upstream) {
 			'statusCode': res.statusCode,
 			'location': res.headers.location
 		};
-		rsp.writeHead(200, {'Content-Type': 'application/json'});
-		rsp.end(JSON.stringify(head));
+		explorer.json(req, rsp, head);
 	})
 	red.end();
 };
@@ -43,12 +49,30 @@ explorer.head = function (req, rsp, path, redirector, upstream) {
 /*
  *  explorer
  */
-explorer.request = function (req, rsp, path, redirector, upstream) {
+explorer.request = function (req, rsp, path, info) {
 
+	/*
+	 *  serve the single-page app
+	 */
 	if (path.match(/^\/$/)) {
 		return explorer.html(req, rsp, 'index');
 	}
 
+	if (path.match(/^\/info.json$/)) {
+		return explorer.json(req, rsp, info);
+	}
+
+	/*
+	 *  proxy the redirector
+	 */
+	if (path.match(/^\/head\//)) {
+		path = path.replace(/^\/head/, "");
+		return explorer.head(req, rsp, path, info);
+	} 
+
+	/*
+	 *  error pages
+	 */
 	if (path.match(/^\/410$/)) {
 		return explorer.html(req, rsp, '410');
 	}
@@ -56,11 +80,6 @@ explorer.request = function (req, rsp, path, redirector, upstream) {
 	if (path.match(/^\/418$/)) {
 		return explorer.html(req, rsp, '418');
 	}
-
-	if (path.match(/^\/head\//)) {
-		path = path.replace(/^\/head/, "");
-		return explorer.head(req, rsp, path, redirector, upstream);
-	} 
 
 	return explorer.html(req, rsp, '404', 404);
 }
