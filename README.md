@@ -36,7 +36,7 @@ The proxy can be used to serve, subject to headers, For example to proxy www.dir
       }
 
       # headers to proxy DirectGov
+      proxy_set_header X-Explore-Title DirectGov;
       proxy_set_header X-Explore-Upstream www.direct.gov.uk;
       proxy_set_header X-Explore-Redirector redirector.dev.gov.uk;
-      proxy_set_header X-Explore-Name DirectGov;
     }
