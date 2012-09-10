@@ -25,7 +25,7 @@ http.createServer(function (req, res) {
 		redirector: req.headers['x-explore-redirector'] || "redirector.preview.alphagov.co.uk"
 	};
 
-	util.log(ip + ": " + req.method + " " + info.upstream + " " + req.url);
+	util.log(req.method + " " + info.upstream + " " + req.url);
 
 	if (req.url.match(/^\/__\//)) {
 		// explorer single-page application and API

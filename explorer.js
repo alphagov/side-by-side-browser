@@ -1,5 +1,6 @@
 var http = require('http');
 var fs = require('fs');
+var util = require('util');
 
 var explorer = {};
 
@@ -41,6 +42,7 @@ explorer.head = function (req, rsp, path, info) {
 			'statusCode': res.statusCode,
 			'location': res.headers.location
 		};
+		util.log(':head: ' + head.statusCode + " " +  options.path + " " + head.location);
 		explorer.json(req, rsp, head);
 	})
 	red.end();
