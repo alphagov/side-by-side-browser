@@ -83,6 +83,14 @@ explorer.request = function (req, rsp, path, info) {
 		return explorer.html(req, rsp, '418');
 	}
 
+	/*
+	 *  quick and dirty decomission
+	 */
+	if (path.match(/^\/(explore|sign_in)\/*/)) {
+		rsp.writeHead(302, {'Location': 'http://explore-dg.production.alphagov.co.uk/__/'});
+		rsp.end();
+	} 
+
 	return explorer.html(req, rsp, '404', 404);
 }
 
