@@ -289,6 +289,10 @@ iframe {
     } catch (e) {
       url = undefined;
     }
+    
+    if (url == 'blank') {
+	return;
+    }
 
     if (!url) {
       var confirm_text = "You have navigated away from the main site, so the right hand side cannot be updated.";
@@ -308,7 +312,7 @@ iframe {
       return;
     }
 
-    if (url === current_url || url === 'blank') {
+    if (url === current_url) {
       return;
     }
 
