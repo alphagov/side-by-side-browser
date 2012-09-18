@@ -290,7 +290,8 @@ iframe {
       url = undefined;
     }
 
-    if (url ==='blank' || url === '/blank') {
+    if (url === 'blank' || url === '/blank' || url === '/__/blank') {
+        set_browser_location('/');
         url = "/";
     }
 
