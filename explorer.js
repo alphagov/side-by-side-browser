@@ -1,6 +1,8 @@
 var http = require('http');
+var https = require('https');
 var fs = require('fs');
 var util = require('util');
+var url = require('url');
 
 var explorer = {};
 
@@ -37,13 +39,39 @@ explorer.head = function (req, rsp, path, info) {
 
 	var red = http.request(options, function(res) {
 		var head = {
-			'options': options,
 			'headers': res.headers,
 			'statusCode': res.statusCode,
 			'location': res.headers.location
 		};
 		util.log(':head: ' + head.statusCode + " " +  options.path + " " + head.location);
-		explorer.json(req, rsp, head);
+
+		if (!head.location) {
+			return explorer.json(req, rsp, head);
+		}
+
+		/* 
+		 *  follow redirect, well one hop, to see status
+		 *  - used to decide if new page is awaiting publication
+		 */
+		var o = url.parse(head.location);
+
+		options = {
+			'method': 'HEAD',
+			'host': o.host,
+			'path': o.pathname
+		};
+
+		var protocol = (o.protocol === "https:") ? https : http;
+
+		var follow = protocol.request(options, function(res) {
+			head.newStatusCode = res.statusCode;
+			util.log(':follow: ' + head.newStatusCode + " " + o.protocol + " " + o.host + " " + o.pathname);
+                        if (head.newStatusCode === 404 && o.host === "www.gov.uk") {
+                            head.location = "https://private-frontend.production.alphagov.co.uk" + o.pathname + "?edition=1";
+                        }
+			return explorer.json(req, rsp, head);
+		});
+		follow.end();
 	})
 	red.end();
 };
