@@ -151,6 +151,13 @@ iframe {
         height: 100%;
         border-top: 1px solid black;
 }
+
+#awaiting-publication {
+        padding: 0.5em;
+        color: white;
+        background-color: red;
+        text-align: center;
+}
 </style>
 </head>
 <body class="explorer">
@@ -172,6 +179,10 @@ iframe {
 			<button>&rarr;</button>
 			<input id="new_url" type="text" readonly="readonly"></input>
 		</div>
+                <div id="awaiting-publication" style="display: none">
+                        <p>Warning: this is a preview of content that has yet to be published</p>
+                        <p><em>Links will not work</em></p>
+                </div>
 		<iframe src=""></iframe>
 	</div>
 </div>
@@ -247,6 +258,13 @@ iframe {
 
     $('#new_url').val(new_url);
     $('#new iframe').attr('src', new_url);
+
+    // warn about awaiting publication
+    if (new_url.match(/^https:\/\/private-frontend/)) {
+        $('#awaiting-publication').show();
+    } else {
+        $('#awaiting-publication').hide();
+    }
   }
 
   /*
