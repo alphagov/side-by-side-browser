@@ -28,7 +28,16 @@ explorer.json = function (req, rsp, content) {
  */
 explorer.head = function (req, rsp, path, info) {
 
-	var options = {
+  // default/fallthrough action: hit the redirector and let the browser do the
+  // rest.
+  var fallthrough = function () {
+    util.log(':fallthrough: ' + path);
+    return explorer.json(req, rsp, {
+      'location': info.upstream_protocol + '://' + info.redirector + path
+    });
+  };
+
+	var redirectorOpts = {
 		'method': 'HEAD',
 		'host': info.redirector,
 		'path': path,
@@ -37,50 +46,36 @@ explorer.head = function (req, rsp, path, info) {
 		}
 	};
 
-	var red = http.request(options, function(res) {
-		var head = {
-			'headers': res.headers,
-			'statusCode': res.statusCode,
-			'location': res.headers.location
-		};
-		util.log(':head: ' + head.statusCode + " " +  options.path + " " + head.location);
+  http.request(redirectorOpts, function(res) {
 
-		if (head.statusCode == 410) {
-			return explorer.json(req, rsp, {
-				'statusCode': 410,
-				'location': 'http://' + info.redirector + path
-			});
-		}
+		util.log(':head: ' + res.statusCode + " " + path + " " + res.headers.location);
 
-		if (!head.location) {
-			return explorer.json(req, rsp, head);
-		}
+    if (res.statusCode != 301) {
+			return fallthrough();
+    }
 
-		/* 
-		 *  follow redirect, well one hop, to see status
-		 *  - used to decide if new page is awaiting publication
-		 */
-		var o = url.parse(head.location);
+    // follow redirect one hop, to see status - used to decide if new page is awaiting publication
+    var nextLoc = url.parse(res.headers.location);
+    var nextOpts = {
+      'method': 'HEAD',
+      'host': nextLoc.host,
+      'path': nextLoc.pathname
+    };
 
-		options = {
-			'method': 'HEAD',
-			'host': o.host,
-			'path': o.pathname
-		};
+		var proto = (nextLoc.protocol === "https:") ? https : http;
+    proto.request(nextOpts, function(res) {
+			util.log(':follow: ' + res.statusCode + ' ' + nextLoc.host + ' ' + nextLoc.pathname);
 
-		var protocol = (o.protocol === "https:") ? https : http;
+      if (res.statusCode === 404 && nextLoc.host === "www.gov.uk") {
+        return explorer.json(req, rsp, {
+          'location': 'https://private-frontend.production.alphagov.co.uk' + nextLoc.pathname + '?edition=1'
+        });
+      }
 
-		var follow = protocol.request(options, function(res) {
-			head.newStatusCode = res.statusCode;
-			util.log(':follow: ' + head.newStatusCode + " " + o.protocol + " " + o.host + " " + o.pathname);
-                        if (head.newStatusCode === 404 && o.host === "www.gov.uk") {
-                            head.location = "https://private-frontend.production.alphagov.co.uk" + o.pathname + "?edition=1";
-                        }
-			return explorer.json(req, rsp, head);
-		});
-		follow.end();
-	})
-	red.end();
+      return fallthrough();
+
+		}).end();
+	}).end();
 };
 
 /*
@@ -105,14 +100,6 @@ explorer.request = function (req, rsp, path, info) {
 	if (path.match(/^\/head\//)) {
 		path = path.replace(/^\/head/, "");
 		return explorer.head(req, rsp, path, info);
-	} 
-
-	/*
-	 *  error pages
-	 */
-
-	if (path.match(/^\/418$/)) {
-		return explorer.html(req, rsp, '418');
 	}
 
 	/*
@@ -121,7 +108,8 @@ explorer.request = function (req, rsp, path, info) {
 	if (path.match(/^\/(explore|sign_in)\/*/)) {
 		rsp.writeHead(302, {'Location': 'http://explore-dg.production.alphagov.co.uk/__/'});
 		rsp.end();
-	} 
+    return false;
+	}
 
 	return explorer.html(req, rsp, '404', 404);
 }

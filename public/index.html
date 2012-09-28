@@ -212,7 +212,7 @@ iframe {
        */
       $.getJSON('/__/info.json', function (info) {
         var url = (info.upstream_protocol || "") + "://" + (info.upstream || "");
-        $('#origin').append('<a id="upstream_home" class="home" href="' + url + '">' + info.title + '</a> to');
+        $('#origin').append('<a id="upstream_home" class="home" href="' + url + '">' + info.title + '</' + 'a> to');
       });
 
       /*
@@ -251,11 +251,7 @@ iframe {
   /*
    *  load new_url in RHS
    */
-  function load_new_url(statusCode, new_url) {
-    if (!new_url) {
-        new_url = "/__/" + statusCode;
-    }
-
+  function load_new_url(new_url) {
     $('#new_url').val(new_url);
     $('#new iframe').attr('src', new_url);
 
@@ -272,9 +268,9 @@ iframe {
    *  .. uses the proxy to send a HEAD request to redirector to find new URL
    */
   function map_old_url(old_url) {
-    $.getJSON('/__/head/' + old_url, function (head) {
+    $.getJSON('/__/head' + old_url, function (head) {
         if (head) {
-            load_new_url(head.statusCode, head.location);
+            load_new_url(head.location);
         }
     });
   }
