@@ -45,6 +45,13 @@ explorer.head = function (req, rsp, path, info) {
 		};
 		util.log(':head: ' + head.statusCode + " " +  options.path + " " + head.location);
 
+		if (head.statusCode == 410) {
+			return explorer.json(req, rsp, {
+				'statusCode': 410,
+				'location': 'http://' + info.redirector + path
+			});
+		}
+
 		if (!head.location) {
 			return explorer.json(req, rsp, head);
 		}
@@ -103,9 +110,6 @@ explorer.request = function (req, rsp, path, info) {
 	/*
 	 *  error pages
 	 */
-	if (path.match(/^\/410$/)) {
-		return explorer.html(req, rsp, '410');
-	}
 
 	if (path.match(/^\/418$/)) {
 		return explorer.html(req, rsp, '418');

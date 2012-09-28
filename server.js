@@ -22,7 +22,7 @@ http.createServer(function (req, res) {
 		title: req.headers['x-explore-title'] || "DirectGov",
 		upstream: req.headers['x-explore-upstream'] || 'www.direct.gov.uk',
 		upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
-		redirector: req.headers['x-explore-redirector'] || "redirector.preview.alphagov.co.uk"
+		redirector: req.headers['x-explore-redirector'] || "www-direct-gov-uk.redirector.preview.alphagov.co.uk"
 	};
 
 	util.log(req.method + " " + info.upstream + " " + req.url);
