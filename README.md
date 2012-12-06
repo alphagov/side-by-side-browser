@@ -1,4 +1,4 @@
-## review-o-matic-explore
+## Side-by-side Browser
 
 Simple node.js proxy to serve a side-by-side browser and a site being reviewed under on the same domain, so the side-by-side browser is 'live' and not blocked by Same-Origin-Policy.
 
