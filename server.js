@@ -22,7 +22,7 @@ http.createServer(function (req, res) {
     title: req.headers['x-explore-title'] || "digitalstandards",
     upstream: req.headers['x-explore-upstream'] || 'digitalstandards.cabinetoffice.gov.uk',
     upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
-    redirector: req.headers['x-explore-redirector'] || "bouncer.production.alphagov.co.uk"
+    redirector: req.headers['x-explore-redirector'] || 'aka-digitalstandards.cabinetoffice.gov.uk',
   };
 
   util.log(req.method + " " + info.upstream + " " + req.url);
