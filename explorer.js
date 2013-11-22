@@ -10,17 +10,17 @@ var explorer = {};
  *  serve html file
  */
 explorer.html = function (req, rsp, name, statusCode) {
-	var content = fs.readFileSync("public/" + name + ".html");
-	rsp.writeHead(statusCode || 200, {'Content-Type': 'text/html; charset=utf-8'});
-	rsp.end(content);
+  var content = fs.readFileSync("public/" + name + ".html");
+  rsp.writeHead(statusCode || 200, {'Content-Type': 'text/html; charset=utf-8'});
+  rsp.end(content);
 };
 
 /*
  *  serve JSON content
  */
 explorer.json = function (req, rsp, content) {
-	rsp.writeHead(200, {'Content-Type': 'application/json'});
-	rsp.end(JSON.stringify(content));
+  rsp.writeHead(200, {'Content-Type': 'application/json'});
+  rsp.end(JSON.stringify(content));
 }
 
 /*
@@ -37,21 +37,21 @@ explorer.head = function (req, rsp, path, info) {
     });
   };
 
-	var redirectorOpts = {
-		'method': 'HEAD',
-		'host': info.redirector,
-		'path': path,
-		'headers': {
-			'host': info.upstream
-		}
-	};
+  var redirectorOpts = {
+    'method': 'HEAD',
+    'host': info.redirector,
+    'path': path,
+    'headers': {
+      'host': info.upstream
+    }
+  };
 
   http.request(redirectorOpts, function(res) {
 
-		util.log(':head: ' + res.statusCode + " " + path + " " + res.headers.location);
+    util.log(':head: ' + res.statusCode + " " + path + " " + res.headers.location);
 
     if (res.statusCode != 301) {
-			return fallthrough();
+      return fallthrough();
     }
 
     // follow redirect one hop, to see status - used to decide if new page is awaiting publication
@@ -62,9 +62,9 @@ explorer.head = function (req, rsp, path, info) {
       'path': nextLoc.pathname
     };
 
-		var proto = (nextLoc.protocol === "https:") ? https : http;
+    var proto = (nextLoc.protocol === "https:") ? https : http;
     proto.request(nextOpts, function(res) {
-			util.log(':follow: ' + res.statusCode + ' ' + nextLoc.host + ' ' + nextLoc.pathname);
+      util.log(':follow: ' + res.statusCode + ' ' + nextLoc.host + ' ' + nextLoc.pathname);
 
       if (res.statusCode === 404 && nextLoc.host === "www.gov.uk") {
         return explorer.json(req, rsp, {
@@ -74,8 +74,8 @@ explorer.head = function (req, rsp, path, info) {
 
       return fallthrough();
 
-		}).end();
-	}).end();
+    }).end();
+  }).end();
 };
 
 /*
@@ -83,35 +83,35 @@ explorer.head = function (req, rsp, path, info) {
  */
 explorer.request = function (req, rsp, path, info) {
 
-	/*
-	 *  serve the single-page app
-	 */
-	if (path.match(/^\/$/)) {
-		return explorer.html(req, rsp, 'index');
-	}
+  /*
+   *  serve the single-page app
+   */
+  if (path.match(/^\/$/)) {
+    return explorer.html(req, rsp, 'index');
+  }
 
-	if (path.match(/^\/info.json$/)) {
-		return explorer.json(req, rsp, info);
-	}
+  if (path.match(/^\/info.json$/)) {
+    return explorer.json(req, rsp, info);
+  }
 
-	/*
-	 *  proxy the redirector
-	 */
-	if (path.match(/^\/head\//)) {
-		path = path.replace(/^\/head/, "");
-		return explorer.head(req, rsp, path, info);
-	}
+  /*
+   *  proxy the redirector
+   */
+  if (path.match(/^\/head\//)) {
+    path = path.replace(/^\/head/, "");
+    return explorer.head(req, rsp, path, info);
+  }
 
-	/*
-	 *  quick and dirty decomission
-	 */
-	if (path.match(/^\/(explore|sign_in)\/*/)) {
-		rsp.writeHead(302, {'Location': 'http://explore-dg.production.alphagov.co.uk/__/'});
-		rsp.end();
+  /*
+   *  quick and dirty decomission
+   */
+  if (path.match(/^\/(explore|sign_in)\/*/)) {
+    rsp.writeHead(302, {'Location': 'http://explore-dg.production.alphagov.co.uk/__/'});
+    rsp.end();
     return false;
-	}
+  }
 
-	return explorer.html(req, rsp, '404', 404);
+  return explorer.html(req, rsp, '404', 404);
 }
 
 module.exports = explorer;

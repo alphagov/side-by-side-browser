@@ -14,28 +14,28 @@ var Transform = proxy.Transform;
 var PORT = process.env.REVIEWOMATIC_EXPLORE_PORT || process.env.PORT || 3023;
 
 http.createServer(function (req, res) {
-	var ip = req.connection.remoteAddress;
-	var upstreamProxy;
-	var path;
+  var ip = req.connection.remoteAddress;
+  var upstreamProxy;
+  var path;
 
-	var info = {
-		title: req.headers['x-explore-title'] || "DirectGov",
-		upstream: req.headers['x-explore-upstream'] || 'www.direct.gov.uk',
-		upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
-		redirector: req.headers['x-explore-redirector'] || "www-direct-gov-uk.redirector.preview.alphagov.co.uk"
-	};
+  var info = {
+    title: req.headers['x-explore-title'] || "digitalstandards",
+    upstream: req.headers['x-explore-upstream'] || 'digitalstandards.cabinetoffice.gov.uk',
+    upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
+    redirector: req.headers['x-explore-redirector'] || "bouncer.production.alphagov.co.uk"
+  };
 
-	util.log(req.method + " " + info.upstream + " " + req.url);
+  util.log(req.method + " " + info.upstream + " " + req.url);
 
-	if (req.url.match(/^\/__\//)) {
-		// explorer single-page application and API
-		path = req.url.replace(/^\/__/, "");
-		explorer.request(req, res, path, info);
-	} else {
-		// upstream host presented on left-hand-side
-		upstreamProxy = new Proxy(info.upstream, true);
-		upstreamProxy.request(req, res);
-	}
+  if (req.url.match(/^\/__\//)) {
+    // explorer single-page application and API
+    path = req.url.replace(/^\/__/, "");
+    explorer.request(req, res, path, info);
+  } else {
+    // upstream host presented on left-hand-side
+    upstreamProxy = new Proxy(info.upstream, true);
+    upstreamProxy.request(req, res);
+  }
 
 }).listen(PORT);
 
