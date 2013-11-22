@@ -11,14 +11,16 @@ Simple node.js proxy to serve a side-by-side browser and a site being reviewed u
 
 #### Setup Nginx to supply headers
 
-The proxy can be used to serve, subject to headers, For example to proxy www.direct.gov.uk on explore-dg.dev.gov.uk:
+The app serves the single host configured in server.js, but an Nginx proxy may be used to allow a single server to review multiple hosts.
 
-    upstream explore-dg.dev.gov.uk-proxy {
+For example to proxy www.direct.gov.uk on directgov.redirector.dev.gov.uk add the following to nginx.conf:
+
+    upstream directgov.dev.gov.uk-proxy {
         server localhost:3023;
     }
 
     server {
-      server_name explore-dg.dev.co.uk ;
+      server_name directgov.dev.co.uk ;
 
       listen 80;
 
@@ -28,11 +30,11 @@ The proxy can be used to serve, subject to headers, For example to proxy www.dir
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_redirect off;
 
-      access_log /var/log/nginx/explore-dg.dev.co.uk-access.log timed_combined;
-      error_log /var/log/nginx/explore-dg.dev.co.uk-error.log;
+      access_log /var/log/nginx/directgov.dev.co.uk-access.log timed_combined;
+      error_log /var/log/nginx/directgov.dev.co.uk-error.log;
 
       location / {
-        proxy_pass http://explore-dg.dev.co.uk-proxy;
+        proxy_pass http://directgov.dev.co.uk-proxy;
       }
 
       # headers to proxy DirectGov
