@@ -19,10 +19,10 @@ http.createServer(function (req, res) {
   var path;
 
   var info = {
-    title: req.headers['x-explore-title'] || "digitalstandards",
-    upstream: req.headers['x-explore-upstream'] || 'digitalstandards.cabinetoffice.gov.uk',
+    title: req.headers['x-explore-title'] || "ukba",
+    upstream: req.headers['x-explore-upstream'] || 'www.ukba.homeoffice.gov.uk',
     upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
-    redirector: req.headers['x-explore-redirector'] || 'aka-digitalstandards.cabinetoffice.gov.uk',
+    redirector: req.headers['x-explore-redirector'] || 'aka.ukba.homeoffice.gov.uk',
   };
 
   util.log(req.method + " " + info.upstream + " " + req.url);
