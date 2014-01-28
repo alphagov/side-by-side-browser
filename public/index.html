@@ -212,7 +212,7 @@ iframe {
        */
       $.getJSON('/__/info.json', function (info) {
         var url = (info.upstream_protocol || "") + "://" + (info.upstream || "");
-        $('#origin').append('<a id="upstream_home" class="home" href="' + url + '">' + info.title + '</' + 'a> to');
+        $('#origin').append('<a id="upstream_home" class="home" href="' + url + '">' + info.upstream + '</' + 'a> to');
       });
 
       /*
