@@ -7,6 +7,7 @@ var https = require('https');
 var util = require('util');
 var proxy = require('./proxy');
 var explorer = require('./explorer');
+var hostname = require('./hostname');
 
 var Proxy = proxy.Proxy;
 var Transform = proxy.Transform;
@@ -21,8 +22,9 @@ http.createServer(function (req, res) {
   var info = {
     upstream: req.headers['x-explore-upstream'] || 'www.ukba.homeoffice.gov.uk',
     upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
-    redirector: req.headers['x-explore-redirector'] || 'aka.ukba.homeoffice.gov.uk',
   };
+
+  info.redirector = req.headers['x-explore-redirector'] || hostname.aka(info.upstream);
 
   util.log(req.method + " " + info.upstream + " " + req.url);
 
