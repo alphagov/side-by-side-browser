@@ -99,10 +99,16 @@ body {
 }
 
 .pane {
-        width: 49.8%;
-        float: left;
-        border-top: 1px solid black;
+        width: 49.8%; /* kludge for ie7 */
         overflow: visible;
+}
+
+.left {
+        float: left;
+}
+
+.right {
+        float: right;
 }
 
 .pane .bar {
@@ -167,14 +173,14 @@ iframe {
         </h1>
   </div>
   <div class="panes">
-	<div id="old" class="pane">
+	<div id="old" class="left pane">
 		<div class="bar">
 			<button>&rarr;</button>
 			<input id="old_url" type="text" readonly="readonly"></input>
 		</div>
 		<iframe src=""></iframe>
 	</div>
-	<div id="new" class="pane">
+	<div id="new" class="right pane">
 		<div class="bar">
 			<button>&rarr;</button>
 			<input id="new_url" type="text" readonly="readonly"></input>
