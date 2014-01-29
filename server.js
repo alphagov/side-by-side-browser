@@ -18,12 +18,13 @@ http.createServer(function (req, res) {
   var ip = req.connection.remoteAddress;
   var upstreamProxy;
   var path;
+  var info = {};
 
-  var info = {
-    upstream: req.headers['x-explore-upstream'] || 'www.ukba.homeoffice.gov.uk',
-    upstream_protocol: req.headers['x-explore-upstream-protocol'] || 'http',
-  };
-
+  /*
+   *  info is shared with the client-side as JSON
+   */
+  info.upstream = req.headers['x-explore-upstream'] || hostname.upstream(req.headers.host) || 'www.ukba.homeoffice.gov.uk';
+  info.upstream_protocol = req.headers['x-explore-upstream-protocol'] || 'http';
   info.redirector = req.headers['x-explore-redirector'] || hostname.aka(info.upstream);
 
   util.log(req.method + " " + info.upstream + " " + req.url);
