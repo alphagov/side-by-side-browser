@@ -6,11 +6,13 @@ var url = require('url');
 
 var explorer = {};
 
+var home = process.env.SIDE_BY_SIDE_HOME || "";
+
 /*
  *  serve html file
  */
 explorer.html = function (req, rsp, name, statusCode) {
-  var content = fs.readFileSync("public/" + name + ".html");
+  var content = fs.readFileSync(home + "public/" + name + ".html");
   rsp.writeHead(statusCode || 200, {'Content-Type': 'text/html; charset=utf-8'});
   rsp.end(content);
 };
