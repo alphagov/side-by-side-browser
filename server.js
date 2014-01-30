@@ -12,7 +12,7 @@ var hostname = require('./hostname');
 var Proxy = proxy.Proxy;
 var Transform = proxy.Transform;
 
-var PORT = process.env.SIDE_BY_SIDE_PORT || process.env.PORT || 3023;
+var PORT = process.env.SIDE_BY_SIDE_PORT || 3023;
 
 http.createServer(function (req, res) {
   var ip = req.connection.remoteAddress;
