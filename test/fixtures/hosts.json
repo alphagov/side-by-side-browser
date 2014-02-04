@@ -1,0 +1,12 @@
+{
+  "results":[
+    {
+      "managed_by_transition" : false,
+      "hostname" : "foo.example.com"
+    },
+    {
+      "managed_by_transition" : false,
+      "hostname" : "bar.example.com"
+    }
+  ]
+}

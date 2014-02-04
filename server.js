@@ -8,13 +8,16 @@ var util = require('util');
 var proxy = require('./proxy');
 var explorer = require('./explorer');
 var hostname = require('./hostname');
+var whitelist = require('./whitelist');
 
 var Proxy = proxy.Proxy;
 var Transform = proxy.Transform;
 
 var PORT = process.env.SIDE_BY_SIDE_PORT || 3023;
 
-http.createServer(function (req, res) {
+whitelist.init();
+
+http.createServer(function (req, rsp) {
   var ip = req.connection.remoteAddress;
   var upstreamProxy;
   var path;
@@ -23,20 +26,24 @@ http.createServer(function (req, res) {
   /*
    *  info is shared with the client-side as JSON
    */
-  info.upstream = req.headers['x-explore-upstream'] || hostname.upstream(req.headers.host) || 'www.ukba.homeoffice.gov.uk';
+  info.upstream = req.headers['x-explore-upstream'] || hostname.upstream(req.headers.host);
   info.upstream_protocol = req.headers['x-explore-upstream-protocol'] || 'http';
   info.redirector = req.headers['x-explore-redirector'] || hostname.aka(info.upstream);
 
   util.log(req.method + " " + info.upstream + " " + req.url);
 
+  if (!whitelist.check(info.upstream)) {
+    explorer.html(req, rsp, "bad-gateway", 502);
+  }
+
   if (req.url.match(/^\/__\//)) {
     // explorer single-page application and API
     path = req.url.replace(/^\/__/, "");
-    explorer.request(req, res, path, info);
+    explorer.request(req, rsp, path, info);
   } else {
     // upstream host presented on left-hand-side
     upstreamProxy = new Proxy(info.upstream, true);
-    upstreamProxy.request(req, res);
+    upstreamProxy.request(req, rsp);
   }
 
 }).listen(PORT);
