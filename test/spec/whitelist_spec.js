@@ -21,6 +21,8 @@ describe('whitelist', function () {
         whitelist.check('www.ukba.homeoffice.gov.uk').should.not.ok;
         whitelist.check('foo.example.com').should.be.ok;
         whitelist.check('bar.example.com').should.be.ok;
+        whitelist.check('aka.example.com').should.not.be.ok;
+        whitelist.check('aka-foo.example.com').should.not.be.ok;
     });
   });
 
