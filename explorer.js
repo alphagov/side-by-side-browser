@@ -56,7 +56,7 @@ explorer.head = function (req, rsp, path, info) {
       return fallthrough();
     }
 
-    // follow redirect one hop, to see status - used to decide if new page is awaiting publication
+    // follow redirect one hop, to see status
     var nextLoc = url.parse(res.headers.location);
     var nextOpts = {
       'method': 'HEAD',
@@ -67,12 +67,6 @@ explorer.head = function (req, rsp, path, info) {
     var proto = (nextLoc.protocol === "https:") ? https : http;
     proto.request(nextOpts, function(res) {
       util.log(':follow: ' + res.statusCode + ' ' + nextLoc.host + ' ' + nextLoc.pathname);
-
-      if (res.statusCode === 404 && nextLoc.host === "www.gov.uk") {
-        return explorer.json(req, rsp, {
-          'location': 'https://private-frontend.production.alphagov.co.uk' + nextLoc.pathname + '?edition=1'
-        });
-      }
 
       return fallthrough();
 
