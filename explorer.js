@@ -48,7 +48,7 @@ explorer.head = function (req, rsp, path, info) {
     }
   };
 
-  http.request(redirectorOpts, function(res) {
+  var req = http.request(redirectorOpts, function(res) {
 
     util.log(':head: ' + res.statusCode + " " + path + " " + res.headers.location);
 
@@ -71,7 +71,13 @@ explorer.head = function (req, rsp, path, info) {
       return fallthrough();
 
     }).end();
-  }).end();
+  })
+
+  req.on('error', function() {
+    console.log(arguments);
+  });
+
+  req.end();
 };
 
 /*
