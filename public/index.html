@@ -264,7 +264,7 @@ iframe {
   function load_new_url(new_url) {
     $('#new_url').val(new_url);
     $('#new iframe').attr('src', new_url);
-    $("a#transition_mapping").attr("href", function(i, href) {
+    $("a#edit_mapping_link").attr("href", function(i, href) {
       if (href.match("http://aka")) {
         return href.replace(href.split("=")[1], new_url);
       } else {
