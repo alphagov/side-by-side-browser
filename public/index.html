@@ -171,6 +171,9 @@ iframe {
         <h1>
                 <a href="/__/">Explore</a> the <span id="origin"></span> <a href="https://www.gov.uk">GOV.UK</a> mappings
         </h1>
+        <h1>
+          <a id="edit_mapping_link" href="https://transition.production.alphagov.co.uk/mappings/find_global?url=">Edit this mapping</a>
+        </h1>
   </div>
   <div class="panes">
 	<div id="old" class="left pane">
@@ -256,10 +259,18 @@ iframe {
 
   /*
    *  load new_url in RHS
+   *  for each new_url loaded, link to its mapping
    */
   function load_new_url(new_url) {
     $('#new_url').val(new_url);
     $('#new iframe').attr('src', new_url);
+    $("a#edit_mapping_link").attr("href", function(i, href) {
+      if (href.match("http://aka")) {
+        return href.replace(href.split("=")[1], new_url);
+      } else {
+        return href + new_url;
+      }
+    });
 
     // warn about awaiting publication
     if (new_url.match(/^https:\/\/private-frontend/)) {
