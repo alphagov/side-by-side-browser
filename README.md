@@ -15,7 +15,7 @@ Proxy a web site to preview redirections ahead of it being transitioned to GOV.U
 
 ...then you can use [xip.io](http://xip.io/) to make it work with localhost, eg:
 
-http://www.ukba.homeoffice.gov.uk.side-by-side.127.0.0.1.xip.io:3023/__/#/
+http://www.environment-agency.gov.uk.side-by-side.127.0.0.1.xip.io:3023/__/#/
 
 ## Installation
 
