@@ -276,10 +276,10 @@ iframe {
     });
 
     // warn about awaiting publication
-    if (new_url.match(/^https:\/\/private-frontend/)) {
-        $('#awaiting-publication').show();
+    if (new_url.match(/^https:\/\/draft-origin/)) {
+      $('#awaiting-publication').show();
     } else {
-        $('#awaiting-publication').hide();
+      $('#awaiting-publication').hide();
     }
   }
 
