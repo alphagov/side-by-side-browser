@@ -4,14 +4,17 @@
  *    - https://transition.production.alphagov.co.uk/hosts
  *    - https://github.com/alphagov/transition/blob/master/app/presenters/hosts_presenter.rb
  */
-var util = require('util');
-var fs = require('fs');
+var fs = require('fs'),
+    http = require('http'),
+    https = require('https'),
+    url = require('url'),
+    util = require('util');
 
 /*
  *  default values
  */
 var home = process.env.SIDE_BY_SIDE_HOME || "";
-var hosts_filename = process.env.SIDE_BY_SIDE_HOSTS || home + "etc/hosts.json";
+var hostsFilename = process.env.SIDE_BY_SIDE_HOSTS || home + "etc/hosts.json";
 
 /*
  *  allowed hostnames
@@ -42,33 +45,40 @@ function parse(data) {
 /*
  *  load from JSON file
  */
-function load(filename, callback) {
-  util.log("loading " + filename);
-  fs.readFile(filename, function (err, data) {
-    if (err) throw err;
-    hosts = parse(data);
-    if (callback) {
-        callback(hosts);
-    }
-  });
-}
+function load(hostsUrl, callback) {
+  var parsedUrl = url.parse(hostsUrl);
 
-/*
- *  automatically reload hosts file when changed
- */
-function watch(filename) {
-  fs.watchFile(filename, function() {
-    load(filename);
-  });
+  if (parsedUrl.protocol === null || parsedUrl.protocol === 'file:') {
+    util.log("loading " + parsedUrl.pathname);
+    fs.readFile(parsedUrl.pathname, function (err, data) {
+      if (err) throw err;
+      hosts = parse(data);
+      if (callback) {
+          callback(hosts);
+      }
+    });
+  } else if ( /^http/.test(parsedUrl.protocol) ) {
+    var get = parsedUrl.protocol === 'https:' ? https.get : http.get;
+    util.log("requesting " + parsedUrl.href);
+    get(parsedUrl.href, function(res) {
+      var data = '';
+      res.on('data', function(chunk) { data += chunk });
+      res.on('end', function() {
+        hosts = parse(data);
+        if (callback) {
+            callback(hosts);
+        }
+      });
+    });
+  }
 }
 
 /*
  *  initialise
  */
-exports.init = function(filename, callback) {
-    filename = filename || hosts_filename;
-    load(filename, callback);
-    watch(filename);
+exports.init = function(hostsUrl, callback) {
+    hostsUrl = hostsUrl || hostsFilename;
+    load(hostsUrl, callback);
 };
 
 /*
