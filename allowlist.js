@@ -10,11 +10,7 @@ var fs = require('fs'),
     url = require('url'),
     util = require('util');
 
-/*
- *  default values
- */
-var home = process.env.SIDE_BY_SIDE_HOME || "";
-var hostsFilename = process.env.SIDE_BY_SIDE_HOSTS || home + "etc/hosts.json";
+var hostsFilename = process.env.SIDE_BY_SIDE_HOSTS || 'https://transition.publishing.service.gov.uk/hosts';
 
 /*
  *  allowed hostnames

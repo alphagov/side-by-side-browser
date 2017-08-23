@@ -11,9 +11,13 @@ describe('allowlist', function () {
   });
 
   it('should initialise with a default filename', function (ok) {
+    nock('https://transition.publishing.service.gov.uk')
+      .get('/hosts')
+      .reply(200, {"results":[{"hostname" : "qux.example.com"}, {"hostname": "aka.example.com"}]});
+
     allowlist.init(undefined, function() {
-        allowlist.check('foo.example.com').should.not.be.ok;
-        allowlist.check('www.ukba.homeoffice.gov.uk').should.be.ok;
+        allowlist.check('qux.example.com').should.be.ok;
+        allowlist.check('aka.example.com').should.not.be.ok;
         ok();
     });
   });
