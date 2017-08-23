@@ -1,7 +1,7 @@
 /*
  *  load allowlist in JSON format produced by the transition application
  *
- *    - https://transition.production.alphagov.co.uk/hosts
+ *    - https://transition.publishing.service.gov.uk/hosts
  *    - https://github.com/alphagov/transition/blob/master/app/presenters/hosts_presenter.rb
  */
 var fs = require('fs'),
