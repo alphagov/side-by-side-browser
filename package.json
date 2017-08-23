@@ -2,8 +2,9 @@
   "name": "review-o-matic-explore",
   "version": "0.0.1",
   "devDependencies": {
-    "mocha": "*",
     "chai": "*",
+    "mocha": "*",
+    "nock": "^9.0.14",
     "sinon": "*",
     "sinon-chai": "*"
   },
