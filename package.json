@@ -7,10 +7,6 @@
     "sinon": "*",
     "sinon-chai": "*"
   },
-  "engines": {
-    "node": "~0.8.0",
-    "npm": "~1.1.0"
-  },
   "scripts": {
     "start": "node server.js",
     "test": "mocha -R spec"
