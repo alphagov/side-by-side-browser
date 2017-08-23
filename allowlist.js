@@ -79,6 +79,7 @@ function load(hostsUrl, callback) {
 exports.init = function(hostsUrl, callback) {
     hostsUrl = hostsUrl || hostsFilename;
     load(hostsUrl, callback);
+    setInterval(function() { load(hostsUrl, callback) }, 1000 * 60 * 15);
 };
 
 /*
