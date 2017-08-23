@@ -8,14 +8,14 @@ var util = require('util');
 var proxy = require('./proxy');
 var explorer = require('./explorer');
 var hostname = require('./hostname');
-var whitelist = require('./whitelist');
+var allowlist = require('./allowlist');
 
 var Proxy = proxy.Proxy;
 var Transform = proxy.Transform;
 
 var PORT = process.env.SIDE_BY_SIDE_PORT || process.env.PORT || 3023;
 
-whitelist.init();
+allowlist.init();
 
 http.createServer(function (req, rsp) {
   var ip = req.connection.remoteAddress;
@@ -32,7 +32,7 @@ http.createServer(function (req, rsp) {
 
   util.log(req.method + " " + info.upstream + " " + req.url);
 
-  if (!whitelist.check(info.upstream)) {
+  if (!allowlist.check(info.upstream)) {
     explorer.html(req, rsp, "bad-gateway", 502);
   }
 

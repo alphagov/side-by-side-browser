@@ -1,5 +1,5 @@
 /*
- *  load whitelist in JSON format produced by the transition application
+ *  load allowlist in JSON format produced by the transition application
  *
  *    - https://transition.production.alphagov.co.uk/hosts
  *    - https://github.com/alphagov/transition/blob/master/app/presenters/hosts_presenter.rb
@@ -72,7 +72,7 @@ exports.init = function(filename, callback) {
 };
 
 /*
- *  check hostname is whitelisted
+ *  check hostname is allowlisted
  */
 exports.check = function (hostname) {
     return hostname in hosts;
