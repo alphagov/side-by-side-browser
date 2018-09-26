@@ -13,9 +13,9 @@ Proxy a web site to preview redirections ahead of it being transitioned to GOV.U
 
     $ node server.js
 
-...then you can use [xip.io](http://xip.io/) to make it work with localhost, eg:
+...then you can use [nip.io](http://xip.io/) to make it work with localhost, eg:
 
-http://www.justice.gov.uk.side-by-side.127.0.0.1.xip.io:3023/__/#/
+http://www.justice.gov.uk.side-by-side.127.0.0.1.nip.io:3023/__/#/
 
 ## Installation
 
