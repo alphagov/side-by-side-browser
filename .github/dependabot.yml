@@ -4,9 +4,3 @@ updates:
     directory: /
     schedule:
       interval: daily
-    allow:
-      # Framework gems
-      - dependency-name: chai
-        dependency-type: direct
-      - dependency-name: mocha
-        dependency-type: direct
