@@ -4,7 +4,7 @@
   "devDependencies": {
     "chai": "*",
     "mocha": "*",
-    "nock": "^9.0.14",
+    "nock": "^13.2.9",
     "sinon": "*",
     "sinon-chai": "*"
   },
