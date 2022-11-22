@@ -1,5 +1,7 @@
 # Side-by-side browser
 
+**Side-by-side browser has been retired and is no longer a part of GOV.UK Transition. It was retired due to the extremely low usage, being years after [the transition project](https://insidegovuk.blog.gov.uk/2014/12/19/300-websites-to-just-1-in-15-months/), which no longer justified the effort to maintain it.**
+
 Proxy a web site to preview redirections ahead of it being transitioned to GOV.UK.
 
 [![sketchy explanation](http://farm3.staticflickr.com/2831/12187616853_d4b6008b5f_z.jpg "sketchy explanation")](http://www.flickr.com/photos/psd/12187616853)
